@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -36,6 +37,22 @@ type Client struct {
 	client   *http.Client
 	endpoint string
 	timeout  time.Duration
+}
+
+// WithProxy set http proxy to connect Firebase Cloud Messaging server
+func WithProxy(proxyURL string) func(*Client) error {
+	proxy, err := url.Parse(proxyURL)
+	if err != nil {
+		panic(err)
+	}
+	return func(client *Client) error {
+		client.client = &http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyURL(proxy),
+			},
+		}
+		return nil
+	}
 }
 
 // NewClient creates new Firebase Cloud Messaging Client based on API key and
